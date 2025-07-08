@@ -26,11 +26,34 @@ async def main():
     if not await client.is_user_authorized():
         print("User is not authorized. Please run the script interactively to authorize.")
         await client.send_code_request(PHONE_NUMBER)
+        code_ok = False
         try:
-            await client.sign_in(PHONE_NUMBER, input('Enter the code: '))
+            code = input('Enter the code sent to Telegram: ')
+            await client.sign_in(phone=PHONE_NUMBER, code=code)
+            code_ok = True
+        except errors.SessionPasswordNeededError:
+            # This error means that 2FA is enabled.
+            # Prompt for the password.
+            password = input('Two-factor authentication is enabled. Please enter your password: ')
+            try:
+                await client.sign_in(password=password)
+                code_ok = True
+            except errors.PhoneCodeInvalidError:
+                print("Invalid code entered. Please try again.")
+            except errors.PasswordHashInvalidError:
+                 print("Invalid password entered. Please try again.")
+            except Exception as e_pass:
+                print(f"Error during password entry: {e_pass}")
+        except errors.PhoneCodeInvalidError:
+            print("Invalid code entered. Please try again.")
+        except errors.PhoneNumberUnoccupiedError:
+            print(f"The phone number {PHONE_NUMBER} is not registered on Telegram.")
         except Exception as e:
             print(f"Sign in failed: {e}")
-            return
+
+        if not code_ok:
+            return # Exit if sign-in was not successful
+
         print("Signed in successfully!")
 
     print("Userbot started...")
