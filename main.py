@@ -66,7 +66,7 @@ async def main():
         message_text = event.message.message
         sender = await event.get_sender()
         sender_username = getattr(sender, 'username', 'N/A')
-        print(f"Received message in group {SOURCE_GROUP_ID} from {sender_username}: '{message_text}'")
+        # print(f"Received message in group {SOURCE_GROUP_ID} from {sender_username}: '{message_text}'") # Commented out to reduce noise
 
         if message_text.startswith(COMMAND_PREFIX):
             content_to_forward = message_text[len(COMMAND_PREFIX):].strip()
